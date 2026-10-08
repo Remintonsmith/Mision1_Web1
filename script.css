@@ -1,0 +1,81 @@
+// ---------- Selección de nodos ----------
+const boton = document.querySelector("#boton");
+const contadorEl = document.querySelector("#contador");
+const zona = document.querySelector("#zona");
+
+// ---------- Estado ----------
+const PULSACIONES_POR_EVENTO = 10;
+const CLAVE_SECRETA = "noche"; // reto bonus: escribirla alterna el modo oscuro
+
+let contador = 0;
+let teclasPulsadas = "";
+
+// ---------- Eventos aleatorios ----------
+function cambiarTamano() {
+  const tamanos = ["pequeno", "normal", "grande"];
+  const actual = tamanos.find((t) => boton.classList.contains(t)) || "normal";
+
+  // Elegir un tamaño distinto al actual
+  let nuevo = actual;
+  while (nuevo === actual) {
+    nuevo = tamanos[Math.floor(Math.random() * tamanos.length)];
+  }
+
+  boton.classList.remove("pequeno", "grande");
+  if (nuevo !== "normal") {
+    boton.classList.add(nuevo);
+  }
+}
+
+function alternarModo() {
+  document.body.classList.toggle("oscuro");
+}
+
+function moverBoton() {
+  const maxX = zona.clientWidth - boton.offsetWidth;
+  const maxY = zona.clientHeight - boton.offsetHeight;
+
+  // Se suma la mitad del botón porque está centrado con translate(-50%, -50%)
+  const x = Math.random() * maxX + boton.offsetWidth / 2;
+  const y = Math.random() * maxY + boton.offsetHeight / 2;
+
+  boton.style.left = `${x}px`;
+  boton.style.top = `${y}px`;
+}
+
+function eventoAleatorio() {
+  const eventos = [cambiarTamano, alternarModo, moverBoton];
+  const indice = Math.floor(Math.random() * eventos.length);
+  eventos[indice]();
+}
+
+// ---------- Lógica principal ----------
+function pulsar() {
+  contador++;
+  contadorEl.textContent = contador;
+
+  if (contador % PULSACIONES_POR_EVENTO === 0) {
+    eventoAleatorio();
+  }
+}
+
+function comprobarClaveSecreta(tecla) {
+  teclasPulsadas = (teclasPulsadas + tecla.toLowerCase()).slice(-CLAVE_SECRETA.length);
+
+  if (teclasPulsadas === CLAVE_SECRETA) {
+    alternarModo();
+    teclasPulsadas = "";
+  }
+}
+
+// ---------- Listeners ----------
+boton.addEventListener("click", pulsar);
+
+document.addEventListener("keydown", (e) => {
+  if (e.code === "Space") {
+    e.preventDefault(); // evita que el espacio active también el botón enfocado
+    pulsar();
+  } else if (e.key.length === 1) {
+    comprobarClaveSecreta(e.key);
+  }
+});
